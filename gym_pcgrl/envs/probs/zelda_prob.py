@@ -25,10 +25,10 @@ class ZeldaProblem(Problem):
 
         # self._target_enemy_dist = 4
         # self._target_path = 16
-        self._max_enemies = 10
+        self._max_enemies = 5
 
-        self._target_enemy_dist = 0
-        self._target_path = 6
+        self._target_enemy_dist = 4
+        self._target_path = 16
 
         self._rewards = {
             "player": 3,

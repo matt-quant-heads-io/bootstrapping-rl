@@ -3,7 +3,9 @@ from gym_pcgrl.envs.reps import REPRESENTATIONS
 from gym_pcgrl.envs.helper import get_int_prob, get_string_map
 import numpy as np
 import gym
+# import gymnasium as gym
 from gym import spaces
+# from gymnasium import spaces
 import PIL
 
 """
@@ -151,7 +153,9 @@ class PcgrlEnv(gym.Env):
         info["final_map"] = get_string_map(self._rep._map, self._prob.get_tile_types())
         info["x"] = self._rep._x
         info["y"] = self._rep._y
+        info["reward"] = reward
         #return the values
+        truncated = False
         return observation, reward, done, info
 
     """

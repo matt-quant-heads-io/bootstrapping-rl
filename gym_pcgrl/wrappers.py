@@ -1,4 +1,5 @@
 import gym
+# import gymnasium as gym
 import gym_pcgrl
 
 import numpy as np
@@ -18,6 +19,7 @@ Can be stacked as Last Layer
 class ToImage(gym.Wrapper):
     def __init__(self, game, names, **kwargs):
         if isinstance(game, str):
+            # self.env = gym.make(game)#.env.env
             self.env = gym.make(game)
         else:
             self.env = game
@@ -45,7 +47,7 @@ class ToImage(gym.Wrapper):
         obs = self.transform(obs)
         return obs, reward, done, info
 
-    def reset(self):
+    def reset(self, seed=None, options=None):
         obs = self.env.reset()
         obs = self.transform(obs)
         return obs
@@ -67,7 +69,7 @@ can be stacked
 class OneHotEncoding(gym.Wrapper):
     def __init__(self, game, name, **kwargs):
         if isinstance(game, str):
-            self.env = gym.make(game)
+            self.env = gym.make(game)#.env.env
         else:
             self.env = game
         get_pcgrl_env(self.env).adjust_param(**kwargs)
@@ -111,7 +113,7 @@ can be stacked
 class ActionMap(gym.Wrapper):
     def __init__(self, game, **kwargs):
         if isinstance(game, str):
-            self.env = gym.make(game)
+            self.env = gym.make(game)#.env.env
         else:
             self.env = game
         get_pcgrl_env(self.env).adjust_param(**kwargs)
@@ -163,7 +165,7 @@ can be stacked
 class Cropped(gym.Wrapper):
     def __init__(self, game, crop_size, pad_value, name, **kwargs):
         if isinstance(game, str):
-            self.env = gym.make(game)
+            self.env = gym.make(game)#.env.env
         else:
             self.env = game
         get_pcgrl_env(self.env).adjust_param(**kwargs)
@@ -214,7 +216,8 @@ The wrappers we use for narrow and turtle experiments
 """
 class CroppedImagePCGRLWrapper(gym.Wrapper):
     def __init__(self, game, crop_size, **kwargs):
-        self.pcgrl_env = gym.make(game)
+        self.pcgrl_env = gym.make(game)#.env.env
+        # import pdb; pdb.set_trace()
         self.pcgrl_env.adjust_param(**kwargs)
         # Cropping the map to the correct crop_size
         env = Cropped(self.pcgrl_env, crop_size, self.pcgrl_env.get_border_tile(), 'map')
@@ -233,7 +236,7 @@ Used for wide experiments
 """
 class ActionMapImagePCGRLWrapper(gym.Wrapper):
     def __init__(self, game, **kwargs):
-        self.pcgrl_env = gym.make(game)
+        self.pcgrl_env = gym.make(game)#.env.env
         self.pcgrl_env.adjust_param(**kwargs)
         # Indices for flatting
         flat_indices = ['map']

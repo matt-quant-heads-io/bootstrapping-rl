@@ -1,4 +1,5 @@
 from gym.envs.registration import register
+# from gymnasium.envs.registration import register
 from gym_pcgrl.envs.probs import PROBLEMS
 from gym_pcgrl.envs.reps import REPRESENTATIONS
 
