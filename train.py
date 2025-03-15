@@ -10,7 +10,6 @@ import torch
 # from stable_baselines.common import make_vec_env
 from stable_baselines3 import PPO
 from stable_baselines3.common.results_plotter import load_results, ts2xy, plot_results
-from model import CustomPPO
 from stable_baselines3.common.callbacks import EvalCallback, CallbackList, CheckpointCallback
 from stable_baselines3.common.logger import configure
 
@@ -19,7 +18,7 @@ import matplotlib
 from pathlib import Path
 from utils import load_model
 # from model import FullyConvPolicyBigMap, FullyConvPolicySmallMap, CustomPolicyBigMap, CustomPolicySmallMap
-from model import CustomActorCriticPolicy, CustomCNNFeatureExtractor
+from model import CustomActorCriticPolicy, CustomCNNFeatureExtractor, CustomPPO, WrappedNetwork
 
 
 
@@ -101,7 +100,7 @@ def main(game, representation, experiment, steps, n_cpu, render, logging, tb_log
         "experiment": experiment
     }
     new_logger = configure(f"./experiments/{game}/{experiment}/", ["stdout", "csv", "tensorboard"])
-    env = mkvenv("zelda-narrow-v0", "narrow", None, 1, **kwargs)
+    env = mkvenv("zelda-narrow-v0", "narrow", None, 5, **kwargs)
     policy_kwargs = dict(
         features_extractor_class=CustomCNNFeatureExtractor,
         features_extractor_kwargs=dict(features_dim=256),
@@ -109,8 +108,7 @@ def main(game, representation, experiment, steps, n_cpu, render, logging, tb_log
 
     model = CustomPPO(CustomActorCriticPolicy, env=env, policy_kwargs=policy_kwargs, verbose=2, exp_path=f"./experiments/{game}/{experiment}", device = "cuda" if torch.cuda.is_available() else "cpu")
     # model = CustomPPO.load("/home/jupyter-msiper/bootstrapping-rl/experiments/zelda/ppo_baseline/rl_model_300000_steps_up_to_300k_steps.zip", env)
-    model.policy.to("cuda")
-    # model.set_env(env)
+    model.set_env(env)
     model.set_logger(new_logger)
     
     config = {
@@ -125,7 +123,7 @@ def main(game, representation, experiment, steps, n_cpu, render, logging, tb_log
         # monitor_gym=True,  # auto-upload the videos of agents playing the game
         # save_code=True,  # optional
     )
-    checkpoint_callback = CheckpointCallback(save_freq=steps//10, save_path=f"./experiments/{game}/{experiment}/")
+    checkpoint_callback = CheckpointCallback(save_freq=steps//10, save_path=f"./experiments/{game}/{experiment}/models_from_checkpoint_callback")
     # Separate evaluation env
     
     eval_env = mkvenv("zelda-narrow-v0", "narrow", None, 1, **kwargs)
@@ -135,10 +133,10 @@ def main(game, representation, experiment, steps, n_cpu, render, logging, tb_log
             model_save_path=f"models/{run.id}",
             verbose=2,
         )
-    
+    net = WrappedNetwork(env.observation_space, env.action_space, lambda x: 0.0003, features_dim=256, last_layer_dim_pi=256, last_layer_dim_vf=256)
     callbacks = CallbackList([checkpoint_callback, eval_callback, wandb_callback])
     load_path = "/home/jupyter-msiper/bootstrapping-rl/saved_models"
-    
+    # import pdb; pdb.set_trace()
     # model = model.load_supervised_weights(
     #     f"{load_path}/feature_extractor.pth",
     #     f"{load_path}/mlp_extractor.pth",
@@ -146,8 +144,15 @@ def main(game, representation, experiment, steps, n_cpu, render, logging, tb_log
     #     f"{load_path}/value_net.pth",
 
     # )
-    model.train_actor_supervised(epochs=250, batch_size=16, lr=0.00003)
-    # model.learn(steps, callback=callbacks)
+    model.policy.features_extractor = net._features_extractor
+    model.policy.mlp_extractor = net._mlp_extractor
+    model.policy.action_net = net._action_net
+    model.policy.value_net = net._value_net
+    model.policy.share_features_extractor = False
+    # model.train_actor_supervised(epochs=250, batch_size=16, lr=0.0003)
+    model.policy.to("cuda")
+    model.learn(steps, callback=callbacks)
+
     
     run.finish()
     
@@ -194,7 +199,7 @@ def parse_args():
     parser.add_argument('--representation', '-r', default='narrow')
     parser.add_argument('--experiment', default="ppo_baseline")
     # parser.add_argument('--n_steps', default=0, type=int)
-    parser.add_argument('--steps', default=100000000, type=int)
+    parser.add_argument('--steps', default=1000000, type=int)
     parser.add_argument('--render', default=False, type=bool)
     parser.add_argument('--logging', default=True, type=bool)
     parser.add_argument('--n_cpu', default=1, type=int)

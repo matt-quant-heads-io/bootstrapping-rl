@@ -274,7 +274,7 @@ def parse_args():
     parser.add_argument('--representation', '-r', default='narrow')
     parser.add_argument('--results_path', default="ppo_100M_steps")
     parser.add_argument('--experiment', default="1", type=str)
-    parser.add_argument('--chg_pct', default=1.0, type=float)
+    parser.add_argument('--chg_pct', default=3.0, type=float)
     parser.add_argument('--trials', default=500, type=int)
     parser.add_argument('--verbose', default=True, type=bool)
 

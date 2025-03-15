@@ -310,7 +310,7 @@ def int_from_oh(state, obs_dim):
 
 def gen_trajectories(domain, num_episodes, mode_of_output, action_dim, obs_dim, traj_len, sampling_strat):
     goal_maps_root_dir = f"{PROJECT_ROOT}/goal_maps/{domain}"
-    goal_maps_set = [i for i in range(0, len(sorted(os.listdir(goal_maps_root_dir))))]
+    goal_maps_set = [i for i in range(0, len(sorted(os.listdir(goal_maps_root_dir)[:5])))]
     prob_obj = DOMAIN_TO_PROB_OBJ_MAP[domain]()
     # random.shuffle(goal_maps_set)
     goal_set_idxs = goal_maps_set
@@ -413,7 +413,7 @@ def gen_trajectories(domain, num_episodes, mode_of_output, action_dim, obs_dim, 
                 break
             yield batch
 
-    saves = 6  
+    saves = 4  
     internal_idx = 0
     for i, (next_obs, obs, act, returns, done, is_start, reward) in enumerate(tuple_trajectories):
         # import pdb; pdb.set_trace()

@@ -83,6 +83,8 @@ from stable_baselines3.common.utils import (
     obs_as_tensor,
 )
 
+
+
 import warnings
 from typing import Any, ClassVar, Optional, TypeVar, Union
 
@@ -414,7 +416,7 @@ class CustomPPO(PPO):
         # value_net = deepcopy(self.policy.value_net)
         # mlp_extractor = deepcopy(self.policy.mlp_extractor)
         # features_extractor = deepcopy(self.policy.features_extractor)
-        net = WrappedNetwork(self.env.observation_space, self.env.action_space, 1, features_dim=256, last_layer_dim_pi=256, last_layer_dim_vf=256)
+        net = WrappedNetwork(self.env.observation_space, self.env.action_space, lambda x: lr, features_dim=256, last_layer_dim_pi=256, last_layer_dim_vf=256)
         # net.load_state_dict(
         #     torch.load("/home/jupyter-msiper/bootstrapping-rl/experiments/zelda/supervised_training/sl_policy.pth", weights_only=True, map_location=self.device)
         # )
@@ -596,10 +598,10 @@ class CustomPPO(PPO):
         # value_net = deepcopy(self.policy.value_net)
         # mlp_extractor = deepcopy(self.policy.mlp_extractor)
         # features_extractor = deepcopy(self.policy.features_extractor)
-        net = WrappedNetwork(self.env.observation_space, self.env.action_space, 1, features_dim=256, last_layer_dim_pi=256, last_layer_dim_vf=256)
-        # net.load_state_dict(
-        #     torch.load("/home/jupyter-msiper/bootstrapping-rl/experiments/zelda/supervised_training/sl_policy.pth", weights_only=True, map_location=self.device)
-        # )
+        net = WrappedNetwork(self.env.observation_space, self.env.action_space, lambda x: lr, features_dim=256, last_layer_dim_pi=256, last_layer_dim_vf=256)
+        net.load_state_dict(
+            torch.load("/home/jupyter-msiper/bootstrapping-rl/experiments/zelda/supervised_training/sl_policy.pth", weights_only=True, map_location=self.device)
+        )
         # print(net.summary())
         optimizer = optim.Adam(net.parameters(), lr=lr)
         net.to('cuda')
@@ -860,3 +862,7 @@ class CustomPPO(PPO):
         self.logger.record("train/clip_range", clip_range)
         if self.clip_range_vf is not None:
             self.logger.record("train/clip_range_vf", clip_range_vf)
+
+
+        
+        

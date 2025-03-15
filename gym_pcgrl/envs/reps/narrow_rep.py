@@ -15,7 +15,7 @@ class NarrowRepresentation(Representation):
     """
     def __init__(self):
         super().__init__()
-        self._random_tile = False
+        self._random_tile = True
         self._random = random
 
     """
@@ -104,8 +104,8 @@ class NarrowRepresentation(Representation):
             change += [0,1][self._map[self._y][self._x] != action-1]
             self._map[self._y][self._x] = action-1
         if self._random_tile:
-            self._x = self._random.randint(self._map.shape[1])
-            self._y = self._random.randint(self._map.shape[0])
+            self._x = self._random.randint(0, self._map.shape[1]-1)
+            self._y = self._random.randint(0, self._map.shape[0]-1)
         else:
             self._x += 1
             if self._x >= self._map.shape[1]:
