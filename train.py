@@ -100,7 +100,7 @@ def main(game, representation, experiment, steps, n_cpu, render, logging, tb_log
         "experiment": experiment
     }
     new_logger = configure(f"./experiments/{game}/{experiment}/", ["stdout", "csv", "tensorboard"])
-    env = mkvenv("zelda-narrow-v0", "narrow", None, 5, **kwargs)
+    env = mkvenv("zelda-narrow-v0", "narrow", None, 1, **kwargs)
     policy_kwargs = dict(
         features_extractor_class=CustomCNNFeatureExtractor,
         features_extractor_kwargs=dict(features_dim=256),
@@ -149,9 +149,9 @@ def main(game, representation, experiment, steps, n_cpu, render, logging, tb_log
     model.policy.action_net = net._action_net
     model.policy.value_net = net._value_net
     model.policy.share_features_extractor = False
-    # model.train_actor_supervised(epochs=250, batch_size=16, lr=0.0003)
+    model.train_actor_supervised(epochs=10, batch_size=16, lr=0.0003)
     model.policy.to("cuda")
-    model.learn(steps, callback=callbacks)
+    # model.learn(steps, callback=callbacks)
 
     
     run.finish()

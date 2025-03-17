@@ -37,6 +37,7 @@ from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 from stable_baselines3.common.policies import BasePolicy
 
 from einops import rearrange
+
 import utils
 
 
@@ -450,6 +451,8 @@ class CustomPPO(PPO):
                 action_preds, value_preds = net(obs_batch)
                 
                 action_loss = action_loss_fn(action_preds.float(), action_batch.float())
+                print(f"action_preds: {action_preds.shape}")
+                print(f"action_batch: {action_batch.shape}")
                 value_loss = value_loss_fn(value_preds, value_batch)
                 
 
@@ -599,9 +602,9 @@ class CustomPPO(PPO):
         # mlp_extractor = deepcopy(self.policy.mlp_extractor)
         # features_extractor = deepcopy(self.policy.features_extractor)
         net = WrappedNetwork(self.env.observation_space, self.env.action_space, lambda x: lr, features_dim=256, last_layer_dim_pi=256, last_layer_dim_vf=256)
-        net.load_state_dict(
-            torch.load("/home/jupyter-msiper/bootstrapping-rl/experiments/zelda/supervised_training/sl_policy.pth", weights_only=True, map_location=self.device)
-        )
+        # net.load_state_dict(
+        #     torch.load("/home/jupyter-msiper/bootstrapping-rl/experiments/zelda/supervised_training/sl_policy.pth", weights_only=True, map_location=self.device)
+        # )
         # print(net.summary())
         optimizer = optim.Adam(net.parameters(), lr=lr)
         net.to('cuda')
@@ -630,6 +633,8 @@ class CustomPPO(PPO):
                 
                 
                 action_preds = net(obs_batch)
+                print(f"action_preds: {action_preds.shape}")
+                print(f"action_batch: {action_batch.shape}")
                 
                 action_loss = action_loss_fn(action_preds.float(), action_batch.float())    
 

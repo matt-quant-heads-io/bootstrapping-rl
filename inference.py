@@ -189,13 +189,25 @@ def infer(game, representation, experiment, **kwargs):
     )
     # model = CustomPPO(CustomActorCriticPolicy, env=env, policy_kwargs=policy_kwargs, verbose=2, exp_path=f"./experiments/{game}/supervised_training", device = "cuda" if torch.cuda.is_available() else "cpu")
     model = CustomPPO(CustomActorCriticPolicy, env=env, policy_kwargs=policy_kwargs, verbose=2, exp_path=f"./experiments/{game}/supervised_training", device = "cpu")
-    model.load_supervised_weights(
-        f"/home/jupyter-msiper/bootstrapping-rl/experiments/zelda/supervised_training/feature_extractor.pth",
-        f"/home/jupyter-msiper/bootstrapping-rl/experiments/zelda/supervised_training/mlp_extractor.pth",
-        f"/home/jupyter-msiper/bootstrapping-rl/experiments/zelda/supervised_training/action_net.pth",
-        f"/home/jupyter-msiper/bootstrapping-rl/experiments/zelda/supervised_training/value_net.pth",
+    # model.load_supervised_weights(
+    #     f"/home/jupyter-msiper/bootstrapping-rl/experiments/zelda/supervised_training/feature_extractor.pth",
+    #     f"/home/jupyter-msiper/bootstrapping-rl/experiments/zelda/supervised_training/mlp_extractor.pth",
+    #     f"/home/jupyter-msiper/bootstrapping-rl/experiments/zelda/supervised_training/action_net.pth",
+    #     f"/home/jupyter-msiper/bootstrapping-rl/experiments/zelda/supervised_training/value_net.pth",
 
-    )
+    # )
+    net = WrappedNetwork(env.observation_space, env.action_space, lambda x: 0.0003, features_dim=256, last_layer_dim_pi=256, last_layer_dim_vf=256)
+    net.load_state_dict(
+        torch.load(f"/home/jupyter-msiper/bootstrapping-rl/experiments/zelda/{experiment}/sl_policy.pth", weights_only=True, map_location='cuda')
+        )
+    
+    
+    model.policy.features_extractor = net._features_extractor
+    model.policy.mlp_extractor = net._mlp_extractor
+    model.policy.action_net = net._action_net
+    model.policy.value_net = net._value_net
+    
+    
     model.policy.eval()
     # model.save("/home/jupyter-msiper/bootstrapping-rl/experiments/zelda/supervised_training/model.zip")
     # model = CustomPPO.load("/home/jupyter-msiper/bootstrapping-rl/experiments/zelda/supervised_training/model.zip")
@@ -228,7 +240,7 @@ def infer(game, representation, experiment, **kwargs):
             action = output.item()
             # print(f"action: {action}")
                 # print(f"output: {output}")
-            obs, _, dones, info = env.step([action+1])
+            obs, _, dones, info = env.step([action])
             # import pdb; pdb.set_trace()
             if kwargs.get('verbose', False):
                 pass
